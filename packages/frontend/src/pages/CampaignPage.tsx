@@ -1,8 +1,9 @@
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Address, isAddress } from "viem";
 import { useCampaign } from "@/hooks/useCampaign";
 import { useContributors } from "@/hooks/useContributors";
+import { useCampaignMeta } from "@/hooks/useCampaignMeta";
 import { CampaignCard } from "@/components/CampaignCard";
 import { ContributeForm } from "@/components/ContributeForm";
 import { ActionButtons } from "@/components/ActionButtons";
@@ -12,26 +13,25 @@ const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as Address;
 
 export default function CampaignPage() {
   const { address } = useParams<{ address: string }>();
-  const [searchParams] = useSearchParams();
 
   const isValid = !!address && isAddress(address);
   const contractAddress = isValid ? (address as Address) : ZERO_ADDR;
 
-  // Title, description, and block passed as query params from gallery.
-  // block = campaign deploy block — used as fromBlock for getLogs to stay within Hashio's 7-day limit.
-  const title       = searchParams.get("title")       ?? "";
-  const description = searchParams.get("description") ?? "";
-  const blockParam  = searchParams.get("block");
-  const deployBlock = blockParam ? BigInt(blockParam) : undefined;
+  // Title and description are fetched from the mirror node using the campaign address.
+  // This works for any URL — direct links, shared links, no query params needed.
+  const { title, description, isLoading: metaLoading } = useCampaignMeta(contractAddress);
 
   const campaign = useCampaign(contractAddress);
   const { contributors, isLoading: contribLoading, refetch: refetchContribs } =
-    useContributors(contractAddress, deployBlock);
+    useContributors(contractAddress);
 
   function handleTxSuccess() {
     campaign.refetch();
     refetchContribs();
   }
+
+  // Shareable clean URL — just the address, no fragile query params
+  const shareUrl = `${window.location.origin}/campaign/${contractAddress}`;
 
   if (!isValid) {
     return (
@@ -54,38 +54,26 @@ export default function CampaignPage() {
         <ConnectButton />
       </div>
 
-      {/* Title + description banner — shown when navigating from the gallery */}
-      {title ? (
-        <div className="campaign-meta-banner">
-          <h2 className="campaign-detail-title">{title}</h2>
-          {description && (
-            <p className="campaign-detail-desc">{description}</p>
-          )}
-          <div className="share-row">
-            <span className="share-label">Share:</span>
-            <code className="share-url">{contractAddress}</code>
-            <button
-              className="btn-copy"
-              onClick={() => navigator.clipboard.writeText(window.location.href)}
-            >
-              Copy link
-            </button>
-          </div>
+      <div className="campaign-meta-banner">
+        {metaLoading ? (
+          <p className="loading-msg">Loading campaign info…</p>
+        ) : (
+          <>
+            {title && <h2 className="campaign-detail-title">{title}</h2>}
+            {description && <p className="campaign-detail-desc">{description}</p>}
+          </>
+        )}
+        <div className="share-row">
+          <span className="share-label">Share:</span>
+          <code className="share-url">{shareUrl}</code>
+          <button
+            className="btn-copy"
+            onClick={() => navigator.clipboard.writeText(shareUrl)}
+          >
+            Copy link
+          </button>
         </div>
-      ) : (
-        <div className="campaign-meta-banner">
-          <div className="share-row" style={{ paddingTop: 0, borderTop: "none" }}>
-            <span className="share-label">Campaign:</span>
-            <code className="share-url">{contractAddress}</code>
-            <button
-              className="btn-copy"
-              onClick={() => navigator.clipboard.writeText(window.location.href)}
-            >
-              Copy link
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
 
       <CampaignCard data={campaign} />
       <ContributeForm

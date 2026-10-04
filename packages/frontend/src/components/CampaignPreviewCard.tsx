@@ -50,15 +50,9 @@ export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
   const hbarRaised    = parseFloat(formatEther(totalRaised)).toFixed(2);
   const usdRaised     = hbarPrice > 0n ? `≈ ${fmt8dec(effectiveUsd)}` : "";
 
-  // Build query string — title/description avoid a second getLogs call on the detail page;
-  // blockNumber is used as fromBlock for useContributors to stay within Hashio's 7-day window.
-  const params = new URLSearchParams({ title: meta.title });
-  if (meta.description) params.set("description", meta.description);
-  if (meta.blockNumber > 0n) params.set("block", meta.blockNumber.toString());
-
   return (
     <Link
-      to={`/campaign/${meta.address}?${params.toString()}`}
+      to={`/campaign/${meta.address}`}
       className="preview-card-link"
     >
       <div className="preview-card">
