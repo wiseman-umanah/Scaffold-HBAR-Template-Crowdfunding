@@ -4,6 +4,8 @@
 A **multi-campaign USD-denominated crowdfunding platform** on Hedera Testnet, powered by a Chainlink HBAR/USD oracle. Deploy the factory once — users create unlimited campaigns from the UI with shareable URLs.
 
 ---
+# Real-world Use Case 
+Community drives · school projects · emergency funds · small creative campaigns.
 
 ## Quick Start
 
