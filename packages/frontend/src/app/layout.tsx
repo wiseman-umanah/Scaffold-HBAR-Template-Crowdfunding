@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "@/app/providers";
 import "@/app/globals.css";
-import "@rainbow-me/rainbowkit/styles.css";
 
 export const metadata: Metadata = {
   title: "HBAR Crowdfund",
