@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadContracts, useAccount } from "wagmi";
+import { useReadContracts, useReadContract, useAccount } from "wagmi";
 import { Address } from "viem";
 import { CROWDFUND_ABI } from "@/config/abi";
 
@@ -16,16 +16,37 @@ export interface CampaignData {
   timeLeft: bigint;
   isOpen: boolean;
   previewUsd: bigint;
+  /** Live Chainlink HBAR/USD price — 8 decimals (e.g. 10150000 = $0.1015). 0n if unavailable. */
+  hbarPrice: bigint;
   isLoading: boolean;
   refetch: () => void;
 }
 
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as Address;
 
+// Minimal ABI for reading the Chainlink feed directly from the frontend
+const FEED_ABI = [
+  {
+    name: "latestRoundData",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "roundId",        type: "uint80"  },
+      { name: "answer",         type: "int256"  },
+      { name: "startedAt",      type: "uint256" },
+      { name: "updatedAt",      type: "uint256" },
+      { name: "answeredInRound",type: "uint80"  },
+    ],
+  },
+] as const;
+
+const FEED_ADDRESS = "0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a" as Address;
+
 export function useCampaign(contractAddress: Address): CampaignData {
   const { address: account } = useAccount();
 
-  // All reads batched into a single multicall
+  // All contract reads batched into a single multicall
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
       { address: contractAddress, abi: CROWDFUND_ABI, functionName: "organizer" },
@@ -47,18 +68,18 @@ export function useCampaign(contractAddress: Address): CampaignData {
     query: { refetchInterval: 10_000 },
   });
 
-  const organizer   = (data?.[0]?.result as Address)  ?? ZERO_ADDR;
-  const goalUsd     = (data?.[1]?.result as bigint)   ?? 0n;
-  const deadline    = (data?.[2]?.result as bigint)   ?? 0n;
-  const totalRaised = (data?.[3]?.result as bigint)   ?? 0n;
-  const finalized   = (data?.[4]?.result as boolean)  ?? false;
-  const goalMet     = (data?.[5]?.result as boolean)  ?? false;
-  const withdrawn   = (data?.[6]?.result as boolean)  ?? false;
-  const myContribution = (data?.[7]?.result as bigint) ?? 0n;
-  const timeLeft    = (data?.[8]?.result as bigint)   ?? 0n;
-  const isOpen      = (data?.[9]?.result as boolean)  ?? false;
+  const organizer      = (data?.[0]?.result as Address)  ?? ZERO_ADDR;
+  const goalUsd        = (data?.[1]?.result as bigint)   ?? 0n;
+  const deadline       = (data?.[2]?.result as bigint)   ?? 0n;
+  const totalRaised    = (data?.[3]?.result as bigint)   ?? 0n;
+  const finalized      = (data?.[4]?.result as boolean)  ?? false;
+  const goalMet        = (data?.[5]?.result as boolean)  ?? false;
+  const withdrawn      = (data?.[6]?.result as boolean)  ?? false;
+  const myContribution = (data?.[7]?.result as bigint)   ?? 0n;
+  const timeLeft       = (data?.[8]?.result as bigint)   ?? 0n;
+  const isOpen         = (data?.[9]?.result as boolean)  ?? false;
 
-  // previewUsd is a separate read that depends on totalRaised
+  // USD preview of total raised (depends on totalRaised)
   const { data: previewData } = useReadContracts({
     contracts: [
       {
@@ -70,8 +91,20 @@ export function useCampaign(contractAddress: Address): CampaignData {
     ],
     query: { refetchInterval: 15_000, enabled: totalRaised > 0n },
   });
-
   const previewUsd = (previewData?.[0]?.result as bigint) ?? 0n;
+
+  // Live Chainlink HBAR/USD price (8 decimals) — used by ContributeForm for real-time conversion
+  const { data: feedData } = useReadContract({
+    address: FEED_ADDRESS,
+    abi: FEED_ABI,
+    functionName: "latestRoundData",
+    query: { refetchInterval: 15_000 },
+  });
+  // feedData is a tuple: [roundId, answer, startedAt, updatedAt, answeredInRound]
+  const hbarPrice =
+    feedData && (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1] > 0n
+      ? (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1]
+      : 0n;
 
   return {
     organizer,
@@ -85,6 +118,7 @@ export function useCampaign(contractAddress: Address): CampaignData {
     timeLeft,
     isOpen,
     previewUsd,
+    hbarPrice,
     isLoading,
     refetch,
   };

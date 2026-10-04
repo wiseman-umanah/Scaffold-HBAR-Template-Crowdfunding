@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Address } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 import { CROWDFUND_ABI } from "@/config/abi";
@@ -31,7 +32,10 @@ function ActionButton({
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  if (isSuccess) refetch();
+  // Refresh campaign state after tx confirms — useEffect avoids calling during render
+  useEffect(() => {
+    if (isSuccess) refetch();
+  }, [isSuccess, refetch]);
 
   return (
     <div>

@@ -149,3 +149,94 @@ button:disabled {
   font-size: 0.85rem;
   margin-top: 0.4rem;
 }
+
+/* ── ContributeForm enhancements ─────────────────────────────────────── */
+
+.contribute-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.contribute-header h2 {
+  margin-bottom: 0;
+}
+
+.price-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #eff6ff;
+  color: #1e40af;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toggle-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.toggle-btn:not(.active):hover {
+  background: #f3f4f6;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.input-group input {
+  margin-bottom: 0;
+}
+
+.conversion-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.contribute-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #166534;
+  margin-bottom: 0.75rem;
+}
+
+.contribute-summary .muted {
+  color: #16a34a;
+  font-weight: 400;
+}
+
+.contribute-btn {
+  width: 100%;
+}

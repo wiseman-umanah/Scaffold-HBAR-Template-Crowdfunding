@@ -4,9 +4,17 @@ import { formatEther } from "viem";
 import { CampaignData } from "@/hooks/useCampaign";
 
 function fmt8dec(value: bigint): string {
-  // 8-decimal USD → "$X.XX"
   const usd = Number(value) / 1e8;
   return `$${usd.toFixed(2)}`;
+}
+
+/** Format a HBAR wei amount as "X.XXXX HBAR (≈ $Y.YY)" when price is available. */
+function fmtHbarWithUsd(wei: bigint, price8dec: bigint): string {
+  const hbar = parseFloat(formatEther(wei));
+  const hbarStr = hbar.toFixed(4);
+  if (price8dec === 0n || wei === 0n) return `${hbarStr} HBAR`;
+  const usd = (hbar * Number(price8dec)) / 1e8;
+  return `${hbarStr} HBAR (≈ $${usd.toFixed(2)})`;
 }
 
 function formatTimeLeft(seconds: bigint): string {
@@ -27,9 +35,11 @@ export function CampaignCard({ data }: { data: CampaignData }) {
     finalized,
     goalMet,
     withdrawn,
+    myContribution,
     timeLeft,
     isOpen,
     previewUsd,
+    hbarPrice,
     isLoading,
   } = data;
 
@@ -41,10 +51,16 @@ export function CampaignCard({ data }: { data: CampaignData }) {
     );
   }
 
-  // Progress: previewUsd / goalUsd, clamped to 100
+  // Progress: use previewUsd when available, otherwise estimate from HBAR * hbarPrice
+  const effectiveUsd =
+    previewUsd > 0n
+      ? previewUsd
+      : totalRaised > 0n && hbarPrice > 0n
+      ? (totalRaised * hbarPrice) / BigInt(1e18)
+      : 0n;
   const progressPct =
     goalUsd > 0n
-      ? Math.min(100, Math.round((Number(previewUsd) / Number(goalUsd)) * 100))
+      ? Math.min(100, Math.round((Number(effectiveUsd) / Number(goalUsd)) * 100))
       : 0;
 
   const deadlineDate = new Date(Number(deadline) * 1000).toLocaleString();
@@ -78,13 +94,13 @@ export function CampaignCard({ data }: { data: CampaignData }) {
         <span>{fmt8dec(goalUsd)}</span>
       </div>
       <div className="stat-row">
-        <span>Total raised (HBAR)</span>
-        <span>{parseFloat(formatEther(totalRaised)).toFixed(4)} HBAR</span>
+        <span>Total raised</span>
+        <span>{fmtHbarWithUsd(totalRaised, hbarPrice)}</span>
       </div>
-      {previewUsd > 0n && (
+      {myContribution > 0n && (
         <div className="stat-row">
-          <span>Raised (USD, live oracle preview)</span>
-          <span>{fmt8dec(previewUsd)}</span>
+          <span>Your contribution</span>
+          <span>{fmtHbarWithUsd(myContribution, hbarPrice)}</span>
         </div>
       )}
       <div className="stat-row">

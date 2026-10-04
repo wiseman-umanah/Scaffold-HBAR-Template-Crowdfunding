@@ -47,6 +47,7 @@ export default function Home() {
           <ContributeForm
             contractAddress={CONTRACT_ADDRESS}
             isOpen={campaign.isOpen}
+            hbarPrice={campaign.hbarPrice}
             refetch={campaign.refetch}
           />
           <ActionButtons contractAddress={CONTRACT_ADDRESS} data={campaign} />
