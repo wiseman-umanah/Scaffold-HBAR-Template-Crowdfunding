@@ -12,7 +12,7 @@ export interface CampaignMeta {
 }
 
 const FACTORY_ADDRESS = (
-  import.meta.env.VITE_FACTORY_ADDRESS ?? "0x0000000000000000000000000000000000000000"
+  process.env.NEXT_PUBLIC_FACTORY_ADDRESS ?? "0x0000000000000000000000000000000000000000"
 ) as Address;
 
 // Hedera Mirror Node REST API — no eth_getLogs range restriction

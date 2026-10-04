@@ -1,3 +1,5 @@
+"use client";
+
 import { formatEther } from "viem";
 import { Contributor } from "@/hooks/useContributors";
 

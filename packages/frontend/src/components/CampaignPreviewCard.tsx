@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import { useReadContracts } from "wagmi";
 import { Address, formatEther } from "viem";
 import { CROWDFUND_ABI } from "@/config/abi";
@@ -53,7 +55,7 @@ export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
 
   return (
     <Link
-      to={`/campaign/${meta.address}`}
+      href={`/campaign/${meta.address}`}
       className="preview-card-link"
     >
       <div className="preview-card">

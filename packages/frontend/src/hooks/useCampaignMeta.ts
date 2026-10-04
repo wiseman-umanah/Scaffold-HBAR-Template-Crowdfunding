@@ -8,7 +8,7 @@ export interface CampaignMeta {
 
 const MIRROR_BASE = "https://testnet.mirrornode.hedera.com";
 const FACTORY_ADDRESS = (
-  import.meta.env.VITE_FACTORY_ADDRESS ?? "0x0000000000000000000000000000000000000000"
+  process.env.NEXT_PUBLIC_FACTORY_ADDRESS ?? "0x0000000000000000000000000000000000000000"
 ) as Address;
 
 // Keccak256 of "CampaignCreated(address,address,uint256,uint256,string,string)"

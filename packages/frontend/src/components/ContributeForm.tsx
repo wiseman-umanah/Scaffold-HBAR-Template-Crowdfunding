@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { parseEther, Address } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -136,7 +138,7 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
 
       {hbarInput && usdInput && priceAvailable && (
         <div className="contribute-summary">
-          <span>You'll send</span>
+          <span>You&apos;ll send</span>
           <span>
             <strong>{parseFloat(hbarInput).toFixed(4)} HBAR</strong>
             {" "}

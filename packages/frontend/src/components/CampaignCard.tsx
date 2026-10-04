@@ -1,3 +1,5 @@
+"use client";
+
 import { formatEther } from "viem";
 import { CampaignData } from "@/hooks/useCampaign";
 

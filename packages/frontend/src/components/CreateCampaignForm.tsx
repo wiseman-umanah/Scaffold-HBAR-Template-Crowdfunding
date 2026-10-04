@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Address, decodeEventLog } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -5,7 +7,7 @@ import { FACTORY_ABI } from "@/config/abi";
 
 interface Props {
   factoryAddress: Address;
-  onCreated: (campaignAddress: Address, title: string, description: string) => void;
+  onCreated: (campaignAddress: Address) => void;
 }
 
 export function CreateCampaignForm({ factoryAddress, onCreated }: Props) {
@@ -29,17 +31,15 @@ export function CreateCampaignForm({ factoryAddress, onCreated }: Props) {
         });
         if (decoded.eventName === "CampaignCreated") {
           const addr = (decoded.args as { campaign: Address }).campaign;
-          const t    = title.trim();
-          const d    = description.trim();
           reset();
           setTitle(""); setDescription(""); setGoalUsd(""); setDaysInput("7"); setHoursInput("0");
-          onCreated(addr, t, d);
+          onCreated(addr);
         }
       } catch {
         // not a factory log, skip
       }
     }
-  }, [isSuccess, receipt]);
+  }, [isSuccess, receipt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCreate() {
     const goal = parseFloat(goalUsd);

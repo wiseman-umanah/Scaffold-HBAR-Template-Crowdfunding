@@ -65,9 +65,9 @@ The script will print output like this:
 CrowdfundFactory deployed: 0xABC...
 HashScan: https://hashscan.io/testnet/contract/0xABC...
 
-Add to packages/frontend/.env.local:
-VITE_FACTORY_ADDRESS=0xABC...
-VITE_FACTORY_DEPLOY_BLOCK=12345678
+Add to packages/nextjs/.env.local:
+NEXT_PUBLIC_FACTORY_ADDRESS=0xABC...
+NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=12345678
 ```
 
 **Copy both printed values** — you need them in the next step.
@@ -77,15 +77,15 @@ VITE_FACTORY_DEPLOY_BLOCK=12345678
 ### Step 5 — Configure the frontend
 
 ```bash
-cp packages/frontend/.env.example packages/frontend/.env.local
+cp packages/nextjs/.env.example packages/nextjs/.env.local
 ```
 
-Edit `packages/frontend/.env.local` and fill in all three values:
+Edit `packages/nextjs/.env.local` and fill in all three values:
 
 ```env
-VITE_FACTORY_ADDRESS=0xABC...        # from Step 4 output
-VITE_FACTORY_DEPLOY_BLOCK=12345678   # from Step 4 output
-VITE_WALLETCONNECT_PROJECT_ID=...    # from cloud.walletconnect.com
+NEXT_PUBLIC_FACTORY_ADDRESS=0xABC...        # from Step 4 output
+NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=12345678   # from Step 4 output
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...    # from cloud.walletconnect.com
 ```
 
 ---
@@ -93,11 +93,11 @@ VITE_WALLETCONNECT_PROJECT_ID=...    # from cloud.walletconnect.com
 ### Step 6 — Start the frontend
 
 ```bash
-cd packages/frontend
+cd packages/nextjs
 pnpm dev
 ```
 
-Open **http://localhost:5173** in your browser. Connect your wallet (MetaMask or HashPack on Hedera Testnet, chain ID 296) and you're live.
+Open **http://localhost:3000** in your browser. Connect your wallet (MetaMask or HashPack on Hedera Testnet, chain ID 296) and you're live.
 
 ---
 
@@ -181,11 +181,14 @@ packages/
 │   │   ├── UsdGoalCrowdfund.ts
 │   │   └── CrowdfundFactory.ts
 │   └── deployments/hedera_testnet.json
-└── frontend/                         ← Vite + React + wagmi + RainbowKit
+└── nextjs/                           ← Next.js 14 App Router + wagmi + RainbowKit
     └── src/
-        ├── pages/
-        │   ├── Home.tsx              ← gallery + CreateCampaignForm
-        │   └── CampaignPage.tsx      ← shareable /campaign/:address
+        ├── app/
+        │   ├── page.tsx              ← gallery + CreateCampaignForm (/)
+        │   ├── campaign/[address]/   ← shareable /campaign/:address
+        │   ├── layout.tsx            ← root layout, wraps Providers
+        │   ├── providers.tsx         ← SSR-safe wagmi/RainbowKit wrapper
+        │   └── providers-inner.tsx   ← wagmi config (ssr: false)
         ├── hooks/
         │   ├── useCampaign.ts        ← all contract reads
         │   ├── useCampaignMeta.ts    ← title/description from Mirror Node
