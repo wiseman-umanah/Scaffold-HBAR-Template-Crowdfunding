@@ -61,14 +61,11 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
 
   function handleContribute() {
     if (!canSubmit) return;
-    // HashPack EIP-1193 converts wei → tinybars by dividing value by 1e10 before
-    // sending on-chain. Compensate by multiplying by 1e10 so the correct wei amount
-    // arrives in msg.value. Without this, 1 HBAR input → 0.0000000001 HBAR on-chain.
     writeContract({
       address: contractAddress,
       abi: CROWDFUND_ABI,
       functionName: "contribute",
-      value: parseEther(hbarInput) * 10_000_000_000n,
+      value: parseEther(hbarInput),
     });
   }
 
