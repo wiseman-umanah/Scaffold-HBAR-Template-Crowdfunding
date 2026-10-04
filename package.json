@@ -1,0 +1,10 @@
+{
+  "name": "usd-goal-crowdfund",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.18.3",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
