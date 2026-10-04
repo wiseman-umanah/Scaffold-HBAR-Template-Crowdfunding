@@ -2,9 +2,9 @@
 
 > One-command scaffold:
 > ```bash
-> npm create scaffold-hbar@latest --template wiseman-umanah/usd-hbar-crowdfund
+> npm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
 > # or
-> pnpm create scaffold-hbar@latest --template wiseman-umanah/usd-hbar-crowdfund
+> pnpm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
 > ```
 
 ## What this is

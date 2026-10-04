@@ -1,7 +1,7 @@
 {
   "name": "usd-hbar-crowdfund",
-  "description": "USD-hbar crowdfunding on Hedera with Chainlink HBAR/USD and automatic refunds",
+  "description": "USD-HBAR crowdfunding on Hedera with Chainlink HBAR/USD oracle and automatic refunds",
   "version": "1.0.0",
   "tags": ["crowdfunding", "oracle", "chainlink", "hbar", "refunds"],
-  "repository": "https://github.com/<org>/<repo>"
+  "repository": "https://github.com/wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding"
 }

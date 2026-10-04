@@ -1,26 +1,28 @@
 # Dependencies
 node_modules/
 
-# Environment secrets (keep .env.example)
+# Environment secrets (keep .env.example files � they are templates for users)
 .env
 .env.local
 .env.*.local
 
-# Hardhat artifacts & cache
+# Hardhat artifacts & cache (generated on compile � not needed in repo)
 packages/hardhat/artifacts/
 packages/hardhat/cache/
 packages/hardhat/typechain-types/
-packages/hardhat/deployments
 
-# Next.js build output
-packages/nextjs/.next/
-packages/nextjs/out/
+# Hardhat deployments (user-specific after deploy � not committed)
+packages/hardhat/deployments/
+
+# Frontend build output
+packages/frontend/dist/
+packages/frontend/build/
 
 # General
 *.log
 .DS_Store
-dist/
-build/
+
+# PRD / scratch files (not for public repo)
 USD_Goal_Crowdfunding_PRD.pdf
 prd.md
 .bob
