@@ -21,15 +21,14 @@ const FACTORY_ADDRESS = (
 /**
  * The block the factory was deployed at.
  * Set NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK in .env.local to the block printed by deployFactory.ts.
- * Defaults to "current block minus 7 days" if unset — safe for recently-deployed factories.
+ * REQUIRED: Hedera Hashio block numbers are packed consensus timestamps — arithmetic
+ * subtraction does not yield a valid range. Without this env var, fromBlock defaults
+ * to 0n (genesis) which is always correct but may be slow on large histories.
  */
 const FACTORY_DEPLOY_BLOCK: bigint | null =
   process.env.NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK
     ? BigInt(process.env.NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK)
     : null;
-
-// Hedera Hashio: max log range = 7 days worth of blocks (~1 block/sec → 604800 blocks)
-const HEDERA_MAX_BLOCK_RANGE = 600_000n;
 
 const CAMPAIGN_CREATED_EVENT = parseAbiItem(
   "event CampaignCreated(address indexed campaign, address indexed organizer, uint256 goalUsd, uint256 deadline, string title, string description)"
@@ -48,12 +47,9 @@ export function useFactory() {
     try {
       const latestBlock = await client.getBlockNumber();
 
-      // Use factory deploy block if set, otherwise go back 7 days max
-      const fromBlock = FACTORY_DEPLOY_BLOCK !== null
-        ? FACTORY_DEPLOY_BLOCK
-        : latestBlock > HEDERA_MAX_BLOCK_RANGE
-          ? latestBlock - HEDERA_MAX_BLOCK_RANGE
-          : 0n;
+      // Hedera block numbers are packed consensus timestamps — never subtract offsets.
+      // Use exact factory deploy block when set; otherwise scan from genesis.
+      const fromBlock = FACTORY_DEPLOY_BLOCK ?? 0n;
 
       const logs = await client.getLogs({
         address: FACTORY_ADDRESS,

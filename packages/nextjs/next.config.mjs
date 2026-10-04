@@ -1,5 +1,13 @@
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    outputFileTracingRoot: path.join(__dirname, "../../"),
+  },
   webpack: (config) => {
     // Stub out optional/missing peer dependencies that appear in transitive deps
     // of @rainbow-me/rainbowkit → wagmi → @wagmi/connectors but are never used

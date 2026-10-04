@@ -1,26 +1,28 @@
 {
-  "name": "@usd-goal-crowdfund/nextjs",
+  "name": "@usd-hbar-crowdfund/frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.1.3",
     "@tanstack/react-query": "^5.51.23",
-    "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0",
     "viem": "^2.17.0",
     "wagmi": "^2.12.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.4"
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
   }
 }

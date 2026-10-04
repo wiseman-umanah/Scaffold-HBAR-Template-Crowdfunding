@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { parseEther, Address } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -13,16 +11,13 @@ interface Props {
   refetch: () => void;
 }
 
-/** Convert a HBAR amount (as string) to a USD display string using the live price. */
 function hbarToUsd(hbarStr: string, price8dec: bigint): string {
   const hbar = parseFloat(hbarStr);
   if (!hbarStr || isNaN(hbar) || hbar <= 0 || price8dec === 0n) return "";
-  // price8dec: 8-decimal Chainlink answer (e.g. 10150000 = $0.1015)
   const usd = (hbar * Number(price8dec)) / 1e8;
   return usd.toFixed(4);
 }
 
-/** Convert a USD amount (as string) to HBAR using the live price. */
 function usdToHbar(usdStr: string, price8dec: bigint): string {
   const usd = parseFloat(usdStr);
   if (!usdStr || isNaN(usd) || usd <= 0 || price8dec === 0n) return "";
@@ -31,7 +26,6 @@ function usdToHbar(usdStr: string, price8dec: bigint): string {
 }
 
 export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: Props) {
-  // "hbar" | "usd" — which field the user is typing in
   const [mode, setMode] = useState<"hbar" | "usd">("hbar");
   const [hbarInput, setHbarInput] = useState("");
   const [usdInput, setUsdInput]   = useState("");
@@ -39,23 +33,19 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  // Trigger data refresh after confirmation.
-  // Call refetch immediately for contract state (fast RPC reads), then again
-  // after 4 s to catch the Contributed log which Hedera Hashio indexes with a
-  // small delay after the block is finalised.
+  // Refetch immediately for contract state (totalRaised, progress bar), then
+  // again after 5s to catch the Contributed event in getLogs (Hedera Hashio
+  // has a ~3-5s lag between tx receipt and log indexing).
   useEffect(() => {
-    if (!isSuccess) return;
-    refetch();
-    setHbarInput("");
-    setUsdInput("");
-    const t = setTimeout(refetch, 4_000);
-    return () => {
-      clearTimeout(t);
-      reset();
-    };
-  }, [isSuccess, refetch, reset]);
+    if (isSuccess) {
+      refetch();
+      setHbarInput("");
+      setUsdInput("");
+      const t = setTimeout(() => { refetch(); }, 5_000);
+      return () => { clearTimeout(t); reset(); };
+    }
+  }, [isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep the non-active field in sync as the user types
   function onHbarChange(val: string) {
     setHbarInput(val);
     setUsdInput(hbarToUsd(val, hbarPrice));
@@ -66,7 +56,6 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
     setHbarInput(usdToHbar(val, hbarPrice));
   }
 
-  // The actual HBAR value to send is always derived from hbarInput
   const hbarValue = parseFloat(hbarInput);
   const canSubmit = isOpen && !isPending && !isConfirming && hbarValue > 0;
 
@@ -94,7 +83,6 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
         )}
       </div>
 
-      {/* Mode toggle */}
       {priceAvailable && (
         <div className="mode-toggle">
           <button
@@ -114,7 +102,6 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
         </div>
       )}
 
-      {/* Primary input */}
       {mode === "hbar" ? (
         <div className="input-group">
           <input
@@ -147,10 +134,9 @@ export function ContributeForm({ contractAddress, isOpen, hbarPrice, refetch }: 
         </div>
       )}
 
-      {/* Summary row — always show the HBAR amount that will be sent */}
       {hbarInput && usdInput && priceAvailable && (
         <div className="contribute-summary">
-          <span>You&apos;ll send</span>
+          <span>You'll send</span>
           <span>
             <strong>{parseFloat(hbarInput).toFixed(4)} HBAR</strong>
             {" "}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePublicClient } from "wagmi";
 import { Address, parseAbiItem } from "viem";
 
@@ -10,19 +10,20 @@ export interface Contributor {
   lastSeen: bigint;
 }
 
-// Hedera Hashio: max log range = 7 days (~604800 blocks at ~1 block/sec)
-const HEDERA_MAX_BLOCK_RANGE = 600_000n;
+// Hedera Hashio: max log range measured by block timestamps, not block count.
+// 500_000 blocks ≈ 5.8 days — keeps us safely under the 7-day limit.
+const HEDERA_MAX_BLOCK_RANGE = 500_000n;
 
 const CONTRIBUTED_EVENT = parseAbiItem(
   "event Contributed(address indexed contributor, uint256 amount, uint256 totalRaised)"
 );
 
-export function useContributors(contractAddress: Address) {
+export function useContributors(contractAddress: Address, deployBlock?: bigint) {
   const client = usePublicClient();
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function fetch() {
+  const fetch = useCallback(async () => {
     if (!client || contractAddress === "0x0000000000000000000000000000000000000000") {
       setIsLoading(false);
       return;
@@ -30,10 +31,9 @@ export function useContributors(contractAddress: Address) {
     try {
       const latestBlock = await client.getBlockNumber();
 
-      // Campaigns are recent by design — only look back 7 days max (Hashio limit)
-      const fromBlock = latestBlock > HEDERA_MAX_BLOCK_RANGE
-        ? latestBlock - HEDERA_MAX_BLOCK_RANGE
-        : 0n;
+      // Hedera block numbers are packed consensus timestamps — never subtract offsets.
+      // Use exact deploy block when available; otherwise scan from genesis.
+      const fromBlock = deployBlock ?? 0n;
 
       const logs = await client.getLogs({
         address: contractAddress,
@@ -55,10 +55,10 @@ export function useContributors(contractAddress: Address) {
         });
       }
 
-      const list: Contributor[] = Array.from(map.entries()).map(([addr, data]) => ({
+      const list: Contributor[] = Array.from(map.entries()).map(([addr, d]) => ({
         address:          addr as Address,
-        totalContributed: data.total,
-        lastSeen:         data.lastBlock,
+        totalContributed: d.total,
+        lastSeen:         d.lastBlock,
       }));
 
       // Sort by total contributed descending
@@ -69,11 +69,14 @@ export function useContributors(contractAddress: Address) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [client, contractAddress, deployBlock]);
 
   useEffect(() => {
     fetch();
-  }, [client, contractAddress]);
+    // Re-poll every 15s so contributors update even without a manual refetch
+    const interval = setInterval(fetch, 15_000);
+    return () => clearInterval(interval);
+  }, [fetch]);
 
   return { contributors, isLoading, refetch: fetch };
 }

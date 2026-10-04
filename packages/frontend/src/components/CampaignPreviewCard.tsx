@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { useReadContracts } from "wagmi";
 import { Address, formatEther } from "viem";
 import { CROWDFUND_ABI } from "@/config/abi";
@@ -16,10 +14,10 @@ function fmt8dec(v: bigint) {
 }
 
 function statusLabel(finalized: boolean, goalMet: boolean, isOpen: boolean) {
-  if (!finalized && isOpen)   return { text: "Open",              cls: "badge-blue"  };
-  if (!finalized && !isOpen)  return { text: "Awaiting finalize", cls: "badge-gray"  };
-  if (finalized && goalMet)   return { text: "Goal met ✓",        cls: "badge-green" };
-  return                             { text: "Goal not met ✗",    cls: "badge-red"   };
+  if (!finalized && isOpen)  return { text: "Open",              cls: "badge-blue"  };
+  if (!finalized && !isOpen) return { text: "Awaiting finalize", cls: "badge-gray"  };
+  if (finalized && goalMet)  return { text: "Goal met ✓",        cls: "badge-green" };
+  return                            { text: "Goal not met ✗",    cls: "badge-red"   };
 }
 
 export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
@@ -52,16 +50,15 @@ export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
   const hbarRaised    = parseFloat(formatEther(totalRaised)).toFixed(2);
   const usdRaised     = hbarPrice > 0n ? `≈ ${fmt8dec(effectiveUsd)}` : "";
 
+  // Build query string — title/description avoid a second getLogs call on the detail page;
+  // blockNumber is used as fromBlock for useContributors to stay within Hashio's 7-day window.
+  const params = new URLSearchParams({ title: meta.title });
+  if (meta.description) params.set("description", meta.description);
+  if (meta.blockNumber > 0n) params.set("block", meta.blockNumber.toString());
+
   return (
     <Link
-      href={{
-        pathname: `/campaign/${meta.address}`,
-        query: {
-          title: meta.title,
-          ...(meta.description ? { description: meta.description } : {}),
-          ...(meta.blockNumber > 0n ? { block: meta.blockNumber.toString() } : {}),
-        },
-      }}
+      to={`/campaign/${meta.address}?${params.toString()}`}
       className="preview-card-link"
     >
       <div className="preview-card">

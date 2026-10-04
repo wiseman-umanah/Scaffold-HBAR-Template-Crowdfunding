@@ -1,5 +1,3 @@
-"use client";
-
 import { useReadContracts, useReadContract, useAccount } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 import { Address } from "viem";
@@ -48,7 +46,7 @@ export function useCampaign(contractAddress: Address): CampaignData {
   const { address: account } = useAccount();
   const queryClient = useQueryClient();
 
-  // Disable all contract reads when address is zero (e.g. on gallery page price-only usage)
+  // Disable all contract reads when address is zero
   const enabled = contractAddress !== ZERO_ADDR;
 
   const { data, isLoading, refetch: refetchMain } = useReadContracts({
@@ -83,7 +81,28 @@ export function useCampaign(contractAddress: Address): CampaignData {
   const timeLeft       = (data?.[8]?.result as bigint)   ?? 0n;
   const isOpen         = (data?.[9]?.result as boolean)  ?? false;
 
-  // Live Chainlink HBAR/USD price — always fetched; used for progress bar + forms
+  // USD preview of total raised (depends on totalRaised)
+  const { data: previewData, refetch: refetchPreview } = useReadContracts({
+    contracts: [
+      {
+        address: contractAddress,
+        abi: CROWDFUND_ABI,
+        functionName: "previewUsdValue",
+        args: [totalRaised],
+      },
+    ],
+    query: { refetchInterval: 15_000, enabled: enabled && totalRaised > 0n },
+  });
+  const previewUsd = (previewData?.[0]?.result as bigint) ?? 0n;
+
+  function refetch() {
+    // Invalidate wagmi cache first so refetch returns fresh chain data, not stale cache
+    queryClient.invalidateQueries({ queryKey: ["readContracts"] });
+    refetchMain();
+    refetchPreview();
+  }
+
+  // Live Chainlink HBAR/USD price — always enabled
   const { data: feedData } = useReadContract({
     address: FEED_ADDRESS,
     abi: FEED_ABI,
@@ -94,18 +113,6 @@ export function useCampaign(contractAddress: Address): CampaignData {
     feedData && (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1] > 0n
       ? (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1]
       : 0n;
-
-  // Inline USD preview — always in sync with totalRaised and hbarPrice
-  const previewUsd =
-    totalRaised > 0n && hbarPrice > 0n
-      ? (totalRaised * hbarPrice) / BigInt(1e18)
-      : 0n;
-
-  function refetch() {
-    // Invalidate wagmi cache first so refetch returns fresh chain data, not stale cache
-    queryClient.invalidateQueries({ queryKey: ["readContracts"] });
-    refetchMain();
-  }
 
   return {
     organizer,

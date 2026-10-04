@@ -1,7 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Address, isAddress } from "viem";
 import { useCampaign } from "@/hooks/useCampaign";
@@ -11,22 +8,17 @@ import { ContributeForm } from "@/components/ContributeForm";
 import { ActionButtons } from "@/components/ActionButtons";
 import { ContributorList } from "@/components/ContributorList";
 
-interface PageProps {
-  params: { address: string };
-}
+const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as Address;
 
-export default function CampaignPage({ params }: PageProps) {
-  const { address } = params;
-  const searchParams = useSearchParams();
+export default function CampaignPage() {
+  const { address } = useParams<{ address: string }>();
+  const [searchParams] = useSearchParams();
 
-  const isValid = isAddress(address);
-  const contractAddress = isValid
-    ? (address as Address)
-    : ("0x0000000000000000000000000000000000000000" as Address);
+  const isValid = !!address && isAddress(address);
+  const contractAddress = isValid ? (address as Address) : ZERO_ADDR;
 
-  // Title, description, and block are passed as query params from the gallery
-  // to avoid a second getLogs call (Hedera Hashio getLogs range limit).
-  // block = campaign deploy block — used as fromBlock for useContributors.
+  // Title, description, and block passed as query params from gallery.
+  // block = campaign deploy block — used as fromBlock for getLogs to stay within Hashio's 7-day limit.
   const title       = searchParams.get("title")       ?? "";
   const description = searchParams.get("description") ?? "";
   const blockParam  = searchParams.get("block");
@@ -45,7 +37,7 @@ export default function CampaignPage({ params }: PageProps) {
     return (
       <div className="container">
         <div className="header">
-          <Link href="/" className="back-link">← All campaigns</Link>
+          <Link to="/" className="back-link">← All campaigns</Link>
           <ConnectButton />
         </div>
         <div className="card">
@@ -58,12 +50,12 @@ export default function CampaignPage({ params }: PageProps) {
   return (
     <div className="container">
       <div className="header">
-        <Link href="/" className="back-link">← All campaigns</Link>
+        <Link to="/" className="back-link">← All campaigns</Link>
         <ConnectButton />
       </div>
 
       {/* Title + description banner — shown when navigating from the gallery */}
-      {title && (
+      {title ? (
         <div className="campaign-meta-banner">
           <h2 className="campaign-detail-title">{title}</h2>
           {description && (
@@ -80,10 +72,7 @@ export default function CampaignPage({ params }: PageProps) {
             </button>
           </div>
         </div>
-      )}
-
-      {/* When accessed directly via address (no query params), show a minimal share row */}
-      {!title && (
+      ) : (
         <div className="campaign-meta-banner">
           <div className="share-row" style={{ paddingTop: 0, borderTop: "none" }}>
             <span className="share-label">Campaign:</span>

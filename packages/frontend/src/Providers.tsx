@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,21 +5,18 @@ import { hederaTestnet } from "@/config/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const projectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "YOUR_PROJECT_ID";
+  import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ?? "YOUR_PROJECT_ID";
 
-function makeWagmiConfig() {
-  return getDefaultConfig({
-    appName: "USD-HBAR Crowdfund",
-    projectId,
-    chains: [hederaTestnet],
-    ssr: true,
-  });
-}
+export const wagmiConfig = getDefaultConfig({
+  appName: "USD-HBAR Crowdfund",
+  projectId,
+  chains: [hederaTestnet],
+  ssr: false,
+});
+
+const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [wagmiConfig] = useState(makeWagmiConfig);
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

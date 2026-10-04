@@ -3,7 +3,7 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "USD-Goal Crowdfund",
+  title: "USD-HBAR Crowdfund",
   description: "USD-denominated crowdfunding on Hedera Testnet",
 };
 
