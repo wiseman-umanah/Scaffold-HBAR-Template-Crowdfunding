@@ -6,18 +6,9 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
 import { useFactory } from "@/hooks/useFactory";
-import { useCampaign } from "@/hooks/useCampaign";
+import { useHbarPrice } from "@/hooks/useCampaign";
 import { CampaignPreviewCard } from "@/components/CampaignPreviewCard";
 import { CreateCampaignForm } from "@/components/CreateCampaignForm";
-
-const ZERO = "0x0000000000000000000000000000000000000000" as Address;
-
-// We need a live HBAR price for all preview cards.
-// Reuse useCampaign on the zero address just for the price feed read — it handles 0x gracefully.
-function useHbarPrice() {
-  const { hbarPrice } = useCampaign(ZERO);
-  return hbarPrice;
-}
 
 export default function Home() {
   const router   = useRouter();
@@ -26,12 +17,14 @@ export default function Home() {
   const hbarPrice = useHbarPrice();
   const [showCreate, setShowCreate] = useState(false);
 
-  const factoryDeployed = factoryAddress !== ZERO;
+  const factoryDeployed = factoryAddress !== "0x0000000000000000000000000000000000000000";
 
-  function handleCreated(addr: Address) {
+  function handleCreated(addr: Address, title: string, description: string) {
     refetch();
     setShowCreate(false);
-    router.push(`/campaign/${addr}`);
+    const params = new URLSearchParams({ title });
+    if (description) params.set("description", description);
+    router.push(`/campaign/${addr}?${params.toString()}`);
   }
 
   return (

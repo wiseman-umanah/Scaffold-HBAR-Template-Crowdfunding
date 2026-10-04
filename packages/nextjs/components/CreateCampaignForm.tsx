@@ -8,7 +8,7 @@ import { decodeEventLog } from "viem";
 
 interface Props {
   factoryAddress: Address;
-  onCreated: (campaignAddress: Address) => void;
+  onCreated: (campaignAddress: Address, title: string, description: string) => void;
 }
 
 export function CreateCampaignForm({ factoryAddress, onCreated }: Props) {
@@ -33,9 +33,11 @@ export function CreateCampaignForm({ factoryAddress, onCreated }: Props) {
         });
         if (decoded.eventName === "CampaignCreated") {
           const addr = (decoded.args as { campaign: Address }).campaign;
-          onCreated(addr);
+          const t    = title.trim();
+          const d    = description.trim();
           reset();
           setTitle(""); setDescription(""); setGoalUsd(""); setDaysInput("7"); setHoursInput("0");
+          onCreated(addr, t, d);
         }
       } catch {
         // not a factory log, skip

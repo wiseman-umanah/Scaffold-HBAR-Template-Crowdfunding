@@ -53,7 +53,16 @@ export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
   const usdRaised     = hbarPrice > 0n ? `≈ ${fmt8dec(effectiveUsd)}` : "";
 
   return (
-    <Link href={`/campaign/${meta.address}`} className="preview-card-link">
+    <Link
+      href={{
+        pathname: `/campaign/${meta.address}`,
+        query: {
+          title: meta.title,
+          ...(meta.description ? { description: meta.description } : {}),
+        },
+      }}
+      className="preview-card-link"
+    >
       <div className="preview-card">
         <div className="preview-card-header">
           <h3 className="preview-card-title">{meta.title}</h3>

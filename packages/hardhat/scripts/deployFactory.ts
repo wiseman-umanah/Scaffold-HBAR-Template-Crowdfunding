@@ -27,10 +27,14 @@ async function main() {
   await factory.waitForDeployment();
   const factoryAddr = await factory.getAddress();
 
+  // Get the deploy block number so the frontend can use it as fromBlock for getLogs
+  const deployBlock = await ethers.provider.getBlockNumber();
+
   console.log("CrowdfundFactory deployed:", factoryAddr);
   console.log("HashScan:", `https://hashscan.io/testnet/contract/${factoryAddr}`);
-  console.log(`\nSet in packages/nextjs/.env.local:`);
+  console.log(`\nAdd to packages/nextjs/.env.local:`);
   console.log(`NEXT_PUBLIC_FACTORY_ADDRESS=${factoryAddr}`);
+  console.log(`NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=${deployBlock}`);
 
   // ── Write deployments file ────────────────────────────────────────────
   const deploymentsDir = path.join(__dirname, "..", "deployments");
@@ -43,6 +47,7 @@ async function main() {
     network: "hedera_testnet",
     chainId: 296,
     factory: factoryAddr,
+    deployBlock,
     deployedAt: new Date().toISOString(),
   };
   fs.writeFileSync(outPath, JSON.stringify(data, null, 2));

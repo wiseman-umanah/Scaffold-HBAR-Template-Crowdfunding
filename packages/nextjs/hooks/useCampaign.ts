@@ -24,7 +24,7 @@ export interface CampaignData {
 
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as Address;
 
-// Minimal ABI for reading the Chainlink feed directly from the frontend
+// Minimal ABI for reading the Chainlink feed directly
 const FEED_ABI = [
   {
     name: "latestRoundData",
@@ -32,11 +32,11 @@ const FEED_ABI = [
     stateMutability: "view",
     inputs: [],
     outputs: [
-      { name: "roundId",        type: "uint80"  },
-      { name: "answer",         type: "int256"  },
-      { name: "startedAt",      type: "uint256" },
-      { name: "updatedAt",      type: "uint256" },
-      { name: "answeredInRound",type: "uint80"  },
+      { name: "roundId",         type: "uint80"  },
+      { name: "answer",          type: "int256"  },
+      { name: "startedAt",       type: "uint256" },
+      { name: "updatedAt",       type: "uint256" },
+      { name: "answeredInRound", type: "uint80"  },
     ],
   },
 ] as const;
@@ -46,7 +46,9 @@ const FEED_ADDRESS = "0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a" as Address;
 export function useCampaign(contractAddress: Address): CampaignData {
   const { address: account } = useAccount();
 
-  // All contract reads batched into a single multicall
+  // Disable all contract reads when address is zero (e.g. on gallery page price-only usage)
+  const enabled = contractAddress !== ZERO_ADDR;
+
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
       { address: contractAddress, abi: CROWDFUND_ABI, functionName: "organizer" },
@@ -65,7 +67,7 @@ export function useCampaign(contractAddress: Address): CampaignData {
       { address: contractAddress, abi: CROWDFUND_ABI, functionName: "timeLeft" },
       { address: contractAddress, abi: CROWDFUND_ABI, functionName: "isOpen" },
     ],
-    query: { refetchInterval: 10_000 },
+    query: { refetchInterval: 10_000, enabled },
   });
 
   const organizer      = (data?.[0]?.result as Address)  ?? ZERO_ADDR;
@@ -89,18 +91,17 @@ export function useCampaign(contractAddress: Address): CampaignData {
         args: [totalRaised],
       },
     ],
-    query: { refetchInterval: 15_000, enabled: totalRaised > 0n },
+    query: { refetchInterval: 15_000, enabled: enabled && totalRaised > 0n },
   });
   const previewUsd = (previewData?.[0]?.result as bigint) ?? 0n;
 
-  // Live Chainlink HBAR/USD price (8 decimals) — used by ContributeForm for real-time conversion
+  // Live Chainlink HBAR/USD price — always enabled (not tied to contract address)
   const { data: feedData } = useReadContract({
     address: FEED_ADDRESS,
     abi: FEED_ABI,
     functionName: "latestRoundData",
     query: { refetchInterval: 15_000 },
   });
-  // feedData is a tuple: [roundId, answer, startedAt, updatedAt, answeredInRound]
   const hbarPrice =
     feedData && (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1] > 0n
       ? (feedData as readonly [bigint, bigint, bigint, bigint, bigint])[1]
@@ -122,4 +123,37 @@ export function useCampaign(contractAddress: Address): CampaignData {
     isLoading,
     refetch,
   };
+}
+
+/**
+ * Lightweight hook — only reads the live HBAR/USD price from Chainlink.
+ * Use on pages that need the price but don't have a campaign contract address.
+ */
+export function useHbarPrice(): bigint {
+  const FEED_ABI_PRICE = [
+    {
+      name: "latestRoundData",
+      type: "function",
+      stateMutability: "view",
+      inputs: [],
+      outputs: [
+        { name: "roundId",         type: "uint80"  },
+        { name: "answer",          type: "int256"  },
+        { name: "startedAt",       type: "uint256" },
+        { name: "updatedAt",       type: "uint256" },
+        { name: "answeredInRound", type: "uint80"  },
+      ],
+    },
+  ] as const;
+
+  const { data } = useReadContract({
+    address: FEED_ADDRESS,
+    abi: FEED_ABI_PRICE,
+    functionName: "latestRoundData",
+    query: { refetchInterval: 15_000 },
+  });
+
+  return data && (data as readonly [bigint, bigint, bigint, bigint, bigint])[1] > 0n
+    ? (data as readonly [bigint, bigint, bigint, bigint, bigint])[1]
+    : 0n;
 }
