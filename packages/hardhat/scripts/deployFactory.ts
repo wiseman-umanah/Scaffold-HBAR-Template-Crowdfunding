@@ -32,7 +32,7 @@ async function main() {
 
   console.log("CrowdfundFactory deployed:", factoryAddr);
   console.log("HashScan:", `https://hashscan.io/testnet/contract/${factoryAddr}`);
-  console.log(`\nAdd to packages/nextjs/.env.local:`);
+  console.log(`\nAdd to packages/frontend/.env.local:`);
   console.log(`NEXT_PUBLIC_FACTORY_ADDRESS=${factoryAddr}`);
   console.log(`NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=${deployBlock}`);
 

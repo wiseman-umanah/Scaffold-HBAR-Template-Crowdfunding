@@ -65,7 +65,7 @@ The script will print output like this:
 CrowdfundFactory deployed: 0xABC...
 HashScan: https://hashscan.io/testnet/contract/0xABC...
 
-Add to packages/nextjs/.env.local:
+Add to packages/frontend/.env.local:
 NEXT_PUBLIC_FACTORY_ADDRESS=0xABC...
 NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=12345678
 ```
@@ -77,10 +77,10 @@ NEXT_PUBLIC_FACTORY_DEPLOY_BLOCK=12345678
 ### Step 5 — Configure the frontend
 
 ```bash
-cp packages/nextjs/.env.example packages/nextjs/.env.local
+cp packages/frontend/.env.example packages/frontend/.env.local
 ```
 
-Edit `packages/nextjs/.env.local` and fill in all three values:
+Edit `packages/frontend/.env.local` and fill in all three values:
 
 ```env
 NEXT_PUBLIC_FACTORY_ADDRESS=0xABC...        # from Step 4 output
@@ -93,7 +93,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...    # from cloud.walletconnect.com
 ### Step 6 — Start the frontend
 
 ```bash
-cd packages/nextjs
+cd packages/frontend
 pnpm dev
 ```
 
@@ -181,16 +181,22 @@ packages/
 │   │   ├── UsdGoalCrowdfund.ts
 │   │   └── CrowdfundFactory.ts
 │   └── deployments/hedera_testnet.json
-└── nextjs/                           ← Next.js 14 App Router + wagmi + RainbowKit
+└── frontend/                         ← Next.js 14 App Router + wagmi + RainbowKit
     └── src/
         ├── app/
         │   ├── page.tsx              ← gallery + CreateCampaignForm (/)
         │   ├── campaign/[address]/   ← shareable /campaign/:address
         │   ├── layout.tsx            ← root layout, wraps Providers
-        │   ├── providers.tsx         ← SSR-safe wagmi/RainbowKit wrapper
-        │   └── providers-inner.tsx   ← wagmi config (ssr: false)
+        │   └── providers.tsx         ← wagmi + RainbowKit singleton providers
+        ├── components/
+        │   ├── ActionButtons.tsx     ← finalize / withdraw / refund buttons
+        │   ├── CampaignCard.tsx      ← campaign detail stats card
+        │   ├── CampaignPreviewCard.tsx ← gallery preview tile
+        │   ├── ContributeForm.tsx    ← HBAR/USD dual-input contribute form
+        │   ├── ContributorList.tsx   ← ranked contributor leaderboard
+        │   └── CreateCampaignForm.tsx ← campaign creation form
         ├── hooks/
-        │   ├── useCampaign.ts        ← all contract reads
+        │   ├── useCampaign.ts        ← all contract reads + useHbarPrice
         │   ├── useCampaignMeta.ts    ← title/description from Mirror Node
         │   ├── useFactory.ts         ← campaign list from Mirror Node
         │   └── useContributors.ts    ← contributor leaderboard from Mirror Node
