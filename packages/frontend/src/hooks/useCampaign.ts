@@ -70,28 +70,33 @@ export function useCampaign(contractAddress: Address): CampaignData {
     query: { refetchInterval: 10_000, enabled },
   });
 
-  const organizer      = (data?.[0]?.result as Address)  ?? ZERO_ADDR;
-  const goalUsd        = (data?.[1]?.result as bigint)   ?? 0n;
-  const deadline       = (data?.[2]?.result as bigint)   ?? 0n;
-  const totalRaised    = (data?.[3]?.result as bigint)   ?? 0n;
-  const finalized      = (data?.[4]?.result as boolean)  ?? false;
-  const goalMet        = (data?.[5]?.result as boolean)  ?? false;
-  const withdrawn      = (data?.[6]?.result as boolean)  ?? false;
-  const myContribution = (data?.[7]?.result as bigint)   ?? 0n;
-  const timeLeft       = (data?.[8]?.result as bigint)   ?? 0n;
-  const isOpen         = (data?.[9]?.result as boolean)  ?? false;
+  const organizer         = (data?.[0]?.result as Address)  ?? ZERO_ADDR;
+  const goalUsd           = (data?.[1]?.result as bigint)   ?? 0n;
+  const deadline          = (data?.[2]?.result as bigint)   ?? 0n;
+  // Raw on-chain values are in tinybars (HashPack divides wei by 1e10 before sending).
+  const totalRaisedRaw    = (data?.[3]?.result as bigint)   ?? 0n;
+  const finalized         = (data?.[4]?.result as boolean)  ?? false;
+  const goalMet           = (data?.[5]?.result as boolean)  ?? false;
+  const withdrawn         = (data?.[6]?.result as boolean)  ?? false;
+  const myContributionRaw = (data?.[7]?.result as bigint)   ?? 0n;
+  const timeLeft          = (data?.[8]?.result as bigint)   ?? 0n;
+  const isOpen            = (data?.[9]?.result as boolean)  ?? false;
 
-  // USD preview of total raised (depends on totalRaised)
+  // Restore to true wei for display (multiply tinybar values by 1e10)
+  const totalRaised    = totalRaisedRaw    * 10_000_000_000n;
+  const myContribution = myContributionRaw * 10_000_000_000n;
+
+  // USD preview — pass raw tinybar value to contract (that's what it stored)
   const { data: previewData, refetch: refetchPreview } = useReadContracts({
     contracts: [
       {
         address: contractAddress,
         abi: CROWDFUND_ABI,
         functionName: "previewUsdValue",
-        args: [totalRaised],
+        args: [totalRaisedRaw],
       },
     ],
-    query: { refetchInterval: 15_000, enabled: enabled && totalRaised > 0n },
+    query: { refetchInterval: 15_000, enabled: enabled && totalRaisedRaw > 0n },
   });
   const previewUsd = (previewData?.[0]?.result as bigint) ?? 0n;
 

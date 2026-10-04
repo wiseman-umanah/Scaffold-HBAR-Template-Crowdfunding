@@ -28,12 +28,17 @@ interface MirrorLogsResponse {
 /** Decode a Contributed event log from the mirror node response.
  *  topics[1] = contributor (address, padded to 32 bytes)
  *  data      = abi-encoded (uint256 amount, uint256 totalRaised)
+ *
+ *  HashPack divides msg.value by 1e10 before sending on-chain, so the stored
+ *  amount is in tinybars (8 dec). Multiply by 1e10 to restore true wei (18 dec).
  */
 function decodeContributed(log: MirrorLog): { contributor: Address; amount: bigint } | null {
   try {
     const contributor = ("0x" + log.topics[1].slice(-40)) as Address;
     // data is 0x + 32-byte amount + 32-byte totalRaised
-    const amount = BigInt("0x" + log.data.slice(2, 66));
+    const rawAmount = BigInt("0x" + log.data.slice(2, 66));
+    // Restore from tinybar-scale to wei-scale
+    const amount = rawAmount * 10_000_000_000n;
     return { contributor, amount };
   } catch {
     return null;
