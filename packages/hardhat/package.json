@@ -1,5 +1,5 @@
 {
-  "name": "@usd-goal-crowdfund/hardhat",
+  "name": "@usd-hbar-crowdfund/hardhat",
   "version": "1.0.0",
   "private": true,
   "scripts": {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /// @dev Test-only mock for AggregatorV3Interface.
-///      Used in UsdGoalCrowdfund.ts tests to set arbitrary oracle responses.
+///      Used by Hardhat tests to set arbitrary oracle responses.
 contract MockFeed {
     uint80  public roundId;
     int256  public answer;

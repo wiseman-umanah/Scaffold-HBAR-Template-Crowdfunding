@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { parseUnits, Address, decodeEventLog } from "viem";
+import { Address, decodeEventLog } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { FACTORY_ABI } from "@/config/abi";
 
@@ -60,9 +60,6 @@ export function CreateCampaignForm({ factoryAddress, onCreated }: Props) {
       args: [goalBig, deadlineBig, title.trim(), description.trim()],
     });
   }
-
-  // suppress unused import warning — parseUnits kept for future use
-  void parseUnits;
 
   const canSubmit =
     title.trim().length > 0 &&
