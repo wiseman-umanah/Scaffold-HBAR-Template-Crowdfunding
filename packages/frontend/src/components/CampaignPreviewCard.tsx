@@ -31,7 +31,8 @@ export function CampaignPreviewCard({ meta, hbarPrice }: Props) {
     query: { refetchInterval: 15_000 },
   });
 
-  const totalRaised = (data?.[0]?.result as bigint)  ?? 0n;
+  // Scale by 1e10: HashPack stores tinybars on-chain, restore to wei for display
+  const totalRaised = ((data?.[0]?.result as bigint)  ?? 0n) * 10_000_000_000n;
   const finalized   = (data?.[1]?.result as boolean) ?? false;
   const goalMet     = (data?.[2]?.result as boolean) ?? false;
   const isOpen      = (data?.[3]?.result as boolean) ?? false;

@@ -2,7 +2,7 @@
 
 > One-command scaffold:
 > ```bash
-> pnpm create scaffold-hbar@latest --template <org>/usd-goal-crowdfund
+> pnpm create scaffold-hbar@latest --template <org>/usd-hbar-crowdfund
 > ```
 
 ## What this is
