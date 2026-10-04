@@ -5,7 +5,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:testnet": "hardhat run scripts/deploy.ts --network hedera_testnet"
+    "deploy:factory": "hardhat run scripts/deployFactory.ts --network hedera_testnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

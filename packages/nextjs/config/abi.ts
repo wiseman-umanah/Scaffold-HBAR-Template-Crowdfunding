@@ -127,7 +127,7 @@ export const CROWDFUND_ABI = [
     name: "Contributed",
     inputs: [
       { name: "contributor", type: "address", indexed: true },
-      { name: "amount", type: "uint256", indexed: false },
+      { name: "amount",      type: "uint256", indexed: false },
       { name: "totalRaised", type: "uint256", indexed: false },
     ],
   },
@@ -135,9 +135,9 @@ export const CROWDFUND_ABI = [
     type: "event",
     name: "Finalized",
     inputs: [
-      { name: "goalMet", type: "bool", indexed: false },
-      { name: "priceAnswer", type: "int256", indexed: false },
-      { name: "updatedAt", type: "uint256", indexed: false },
+      { name: "goalMet",     type: "bool",    indexed: false },
+      { name: "priceAnswer", type: "int256",  indexed: false },
+      { name: "updatedAt",   type: "uint256", indexed: false },
       { name: "totalRaised", type: "uint256", indexed: false },
     ],
   },
@@ -146,7 +146,7 @@ export const CROWDFUND_ABI = [
     name: "Withdrawn",
     inputs: [
       { name: "organizer", type: "address", indexed: true },
-      { name: "amount", type: "uint256", indexed: false },
+      { name: "amount",    type: "uint256", indexed: false },
     ],
   },
   {
@@ -154,17 +154,84 @@ export const CROWDFUND_ABI = [
     name: "Refunded",
     inputs: [
       { name: "contributor", type: "address", indexed: true },
-      { name: "amount", type: "uint256", indexed: false },
+      { name: "amount",      type: "uint256", indexed: false },
     ],
   },
   // ── Constructor ────────────────────────────────────────────────────────
   {
     type: "constructor",
     inputs: [
-      { name: "goalUsd_", type: "uint256" },
-      { name: "deadline_", type: "uint256" },
-      { name: "feed_", type: "address" },
-      { name: "maxAge_", type: "uint256" },
+      { name: "goalUsd_",    type: "uint256" },
+      { name: "deadline_",   type: "uint256" },
+      { name: "feed_",       type: "address" },
+      { name: "maxAge_",     type: "uint256" },
+      { name: "organizer_",  type: "address" },
+    ],
+  },
+] as const;
+
+// ── Factory ABI ────────────────────────────────────────────────────────────
+export const FACTORY_ABI = [
+  {
+    type: "function",
+    name: "createCampaign",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "goalUsd_",      type: "uint256" },
+      { name: "deadline_",     type: "uint256" },
+      { name: "title_",        type: "string"  },
+      { name: "description_",  type: "string"  },
+    ],
+    outputs: [{ name: "campaign", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "campaigns",
+    stateMutability: "view",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "campaignCount",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "getCampaigns",
+    stateMutability: "view",
+    inputs: [
+      { name: "from", type: "uint256" },
+      { name: "to",   type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "address[]" }],
+  },
+  {
+    type: "function",
+    name: "feed",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "maxAge",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "event",
+    name: "CampaignCreated",
+    inputs: [
+      { name: "campaign",     type: "address", indexed: true  },
+      { name: "organizer",    type: "address", indexed: true  },
+      { name: "goalUsd",      type: "uint256", indexed: false },
+      { name: "deadline",     type: "uint256", indexed: false },
+      { name: "title",        type: "string",  indexed: false },
+      { name: "description",  type: "string",  indexed: false },
     ],
   },
 ] as const;

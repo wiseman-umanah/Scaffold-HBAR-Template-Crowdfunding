@@ -29,16 +29,20 @@ contract UsdGoalCrowdfund {
     event Refunded(address indexed contributor, uint256 amount);
 
     // ── Constructor ────────────────────────────────────────────────────────
+    /// @param organizer_  Campaign organizer. Pass address(0) to use msg.sender.
+    ///                    The factory passes the wallet address explicitly so the
+    ///                    factory contract itself does not become the organizer.
     constructor(
         uint256 goalUsd_,
         uint256 deadline_,
         address feed_,
-        uint256 maxAge_
+        uint256 maxAge_,
+        address organizer_
     ) {
         require(goalUsd_ > 0, "goalUsd must be > 0");
         require(deadline_ > block.timestamp, "deadline must be in future");
         require(feed_ != address(0), "invalid feed address");
-        organizer = msg.sender;
+        organizer = organizer_ == address(0) ? msg.sender : organizer_;
         goalUsd = goalUsd_;
         deadline = deadline_;
         feed = AggregatorV3Interface(feed_);

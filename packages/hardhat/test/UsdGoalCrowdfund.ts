@@ -58,7 +58,8 @@ describe("UsdGoalCrowdfund", function () {
       GOAL_USD,
       BigInt(deadline),
       await feed.getAddress(),
-      MAX_AGE
+      MAX_AGE,
+      ethers.ZeroAddress   // organizer_ = 0 → falls back to msg.sender
     );
     await crowdfund.waitForDeployment();
 
