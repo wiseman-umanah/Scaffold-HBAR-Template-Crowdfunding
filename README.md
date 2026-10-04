@@ -1,138 +1,143 @@
+![alt text](image.png)
 # USD-HBAR Crowdfunding — Scaffold-HBAR Template
 
-> One-command scaffold:
-> ```bash
-> npm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
-> # or
-> pnpm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
-> ```
-
-## What this is
-
-A **multi-campaign crowdfunding platform** on Hedera Testnet. A single `CrowdfundFactory` is deployed once; anyone can create a campaign from the UI. Each campaign has a USD goal and a deadline. Contributors send only native **HBAR** — no token association, no WHBAR, no DEX.
-
-After the deadline, **anyone** calls `finalize()`, which reads the [Chainlink HBAR/USD feed](https://data.chain.link/) **exactly once** and decides if the goal was met:
-
-- **Goal met** → organiser calls `withdraw()` to collect all HBAR.
-- **Goal not met** → every contributor calls `refund()` to recover their full HBAR.
-
-### How this differs from single-contract templates
-
-Most crowdfunding templates deploy one contract = one campaign. This template uses a **factory**: deploy once, create unlimited campaigns from the UI. Each campaign gets a dedicated contract with a shareable URL (`/campaign/0x...`).
-
-### Real-world use cases
-
-Community drives · school projects · emergency funds · small creative campaigns.
+A **multi-campaign USD-denominated crowdfunding platform** on Hedera Testnet, powered by a Chainlink HBAR/USD oracle. Deploy the factory once — users create unlimited campaigns from the UI with shareable URLs.
 
 ---
 
-## Prerequisites
+## Quick Start
 
-| Requirement | Detail |
+### Step 1 — Scaffold the project
+
+```bash
+npm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
+# or
+pnpm create scaffold-hbar@latest --template wiseman-umanah/Scaffold-HBAR-Template-Crowdfunding
+```
+
+This clones the repo and runs `pnpm install` automatically.
+
+---
+
+### Step 2 — Get your prerequisites
+
+Before running anything, make sure you have:
+
+| Requirement | How to get it |
 |---|---|
-| Node.js | >= 20.18.3 |
-| pnpm | >= 9 |
-| Testnet account | [Hedera Portal](https://portal.hedera.com/) |
-| Testnet HBAR faucet | [Hedera Portal faucet](https://portal.hedera.com/) or ask in the Hedera Discord |
-| ECDSA private key | Export from MetaMask or generate via `cast wallet new` or get from your wallet setting in Hashpack |
+| Node.js >= 20.18.3 | [nodejs.org](https://nodejs.org) |
+| pnpm >= 9 | `npm install -g pnpm` |
+| Hedera testnet account | [Hedera Portal](https://portal.hedera.com/) — sign up, create testnet account |
+| Testnet HBAR | Portal faucet (free) — fund your ECDSA address |
+| ECDSA private key | Export from MetaMask, HashPack wallet settings, or `cast wallet new` |
 | WalletConnect project ID | Free at [cloud.walletconnect.com](https://cloud.walletconnect.com) |
 
-> **Important:** A brand-new ECDSA address needs at least one inbound HBAR before it can deploy. If deploy fails with `Sender account not found`, fund the address first.
+> **Important:** Your ECDSA address needs at least one inbound HBAR before it can deploy. If deploy fails with `Sender account not found`, fund the address from the Portal faucet first.
 
 ---
 
-## Environment Variables
+### Step 3 — Configure the contract deployer
 
-### `packages/hardhat/.env`
+```bash
+cp packages/hardhat/.env.example packages/hardhat/.env
+```
 
-| Variable | Required | Description |
-|---|---|---|
-| `HARDHAT_PRIVATE_KEY` | ✅ | ECDSA private key for deployment (`0x…`) |
-| `HASHIO_RPC_URL` | optional | Override RPC (default: `https://testnet.hashio.io/api`) |
+Edit `packages/hardhat/.env` and fill in:
 
-### `packages/frontend/.env.local`
+```env
+HARDHAT_PRIVATE_KEY=0x...   # your ECDSA private key
+```
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_FACTORY_ADDRESS` | ✅ | Factory contract address — printed by deploy script |
-| `VITE_FACTORY_DEPLOY_BLOCK` | ✅ | Block factory was deployed at — printed by deploy script |
-| `VITE_WALLETCONNECT_PROJECT_ID` | ✅ | WalletConnect Cloud project ID |
+---
 
-Copy the template:
+### Step 4 — Deploy the factory contract
+
+The factory is deployed **once**. It creates individual campaign contracts on-demand from the UI.
+
+```bash
+cd packages/hardhat
+pnpm run deploy:factory
+```
+
+The script will print output like this:
+
+```
+CrowdfundFactory deployed: 0xABC...
+HashScan: https://hashscan.io/testnet/contract/0xABC...
+
+Add to packages/frontend/.env.local:
+VITE_FACTORY_ADDRESS=0xABC...
+VITE_FACTORY_DEPLOY_BLOCK=12345678
+```
+
+**Copy both printed values** — you need them in the next step.
+
+---
+
+### Step 5 — Configure the frontend
+
 ```bash
 cp packages/frontend/.env.example packages/frontend/.env.local
 ```
 
+Edit `packages/frontend/.env.local` and fill in all three values:
+
+```env
+VITE_FACTORY_ADDRESS=0xABC...        # from Step 4 output
+VITE_FACTORY_DEPLOY_BLOCK=12345678   # from Step 4 output
+VITE_WALLETCONNECT_PROJECT_ID=...    # from cloud.walletconnect.com
+```
+
 ---
 
-## Deploy & Run
-
-### 1. Install dependencies
-
-```bash
-pnpm install
-```
-
-### 2. Configure the deployer
-
-```bash
-cp packages/hardhat/.env.example packages/hardhat/.env
-# Edit HARDHAT_PRIVATE_KEY — fund the address from the Hedera Portal faucet first
-```
-
-### 3. Compile contracts
-
-```bash
-cd packages/hardhat
-pnpm compile
-```
-
-### 4. Run tests
-
-```bash
-pnpm test                                  # all 31 tests
-pnpm hardhat test test/UsdGoalCrowdfund.ts # single suite
-pnpm hardhat test test/CrowdfundFactory.ts # single suite
-```
-
-### 5. Deploy the factory (once)
-
-```bash
-pnpm run deploy:factory
-```
-
-The script prints:
-
-```
-CrowdfundFactory deployed: 0x…
-HashScan: https://hashscan.io/testnet/contract/0x…
-
-Add to packages/frontend/.env.local:
-VITE_FACTORY_ADDRESS=0x…
-VITE_FACTORY_DEPLOY_BLOCK=12345678
-```
-
-Copy both values to `packages/frontend/.env.local`.
-
-### 6. Start the frontend
+### Step 6 — Start the frontend
 
 ```bash
 cd packages/frontend
 pnpm dev
 ```
 
-Open `http://localhost:5173`. Connect MetaMask (Hedera Testnet, chainId 296) and start creating campaigns.
+Open **http://localhost:5173** in your browser. Connect your wallet (MetaMask or HashPack on Hedera Testnet, chain ID 296) and you're live.
 
 ---
 
-## UI Walkthrough
+## What happens next (UI flow)
 
-1. **Gallery** (`/`) — see all campaigns, or click **Create Campaign** to launch a new one.
-2. **Create** — enter title, description, USD goal, and duration. Transaction deploys a new `UsdGoalCrowdfund` contract; you are redirected to its campaign page.
-3. **Contribute** — enter HBAR amount (or toggle to type USD; conversion shown live via Chainlink).
-4. **Finalize** — any wallet can call this after the deadline. The oracle is read once; `goalMet` is set permanently.
-5. **Withdraw** (organiser only, if goal met) or **Refund** (each contributor, if goal not met).
-6. Share the campaign URL (`/campaign/0x…`) — title and description are always shown, no query params needed.
+1. **Gallery** (`/`) — see all campaigns. Click **Create Campaign** to launch a new one.
+2. **Create** — enter title, description, USD goal, and duration. This deploys a new campaign contract; you are redirected to its page.
+3. **Contribute** — enter HBAR amount (or toggle to type USD; live conversion via Chainlink).
+4. **Finalize** — any wallet calls this after the deadline. The oracle is read once; result is permanent.
+5. **Withdraw** (organiser, if goal met) or **Refund** (each contributor, if goal not met).
+6. **Share** the campaign URL (`/campaign/0x…`) — title and description always load, no login needed.
+
+---
+
+## Other useful commands
+
+```bash
+# Run the full test suite (no network needed — uses local Hardhat EVM)
+cd packages/hardhat
+pnpm test
+
+# Run a single test file
+pnpm hardhat test test/UsdGoalCrowdfund.ts
+pnpm hardhat test test/CrowdfundFactory.ts
+
+# Compile contracts only
+pnpm compile
+```
+
+---
+
+## What this is (background)
+
+- One `CrowdfundFactory` is deployed **once** (Step 4). It stores the Chainlink feed address.
+- Users call `createCampaign()` from the UI — each call deploys a fresh `UsdGoalCrowdfund` contract.
+- Contributors send native HBAR only — no tokens, no DEX, no WHBAR.
+- After the deadline **anyone** calls `finalize()`. The Chainlink feed is read **exactly once** and the result is final.
+- **Goal met** → organiser withdraws the pot. **Goal not met** → every contributor gets a full refund.
+
+Real-world uses: community drives · school projects · emergency funds · creative campaigns.
 
 ---
 
