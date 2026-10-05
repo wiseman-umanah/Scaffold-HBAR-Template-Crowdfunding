@@ -7,9 +7,13 @@ import { hederaTestnet } from "@/config/chains";
 
 const projectId =
   process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "YOUR_PROJECT_ID";
+const appUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : "http://localhost:3000";
 
 export const wagmiConfig = getDefaultConfig({
   appName: "USD-HBAR Crowdfund",
+  appUrl,
   projectId,
   chains: [hederaTestnet],
   ssr: false,
