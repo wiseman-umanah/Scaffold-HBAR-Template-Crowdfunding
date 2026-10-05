@@ -27,3 +27,5 @@ USD_Goal_Crowdfunding_PRD.pdf
 prd.md
 .bob
 .next/
+pnpm-lock.yaml
+pnpm-workspace.yaml
